@@ -22,7 +22,7 @@ DUMMY := ${shell chmod -Rc u+rwX .}
 uniq = $(strip $(if $1,$(firstword $1) \
        $(call uniq,$(filter-out $(firstword $1),$1))))
 
-PROJECTNAME = master
+PROJECTNAME = bt-ncp-cli-empty
 
 OBJ_DIR = build
 EXE_DIR = exe
