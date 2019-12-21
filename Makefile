@@ -22,7 +22,7 @@ DUMMY := ${shell chmod -Rc u+rwX .}
 uniq = $(strip $(if $1,$(firstword $1) \
        $(call uniq,$(filter-out $(firstword $1),$1))))
 
-PROJECTNAME = bt-ncp-cli-empty
+PROJECTNAME = bt-system-reset
 
 OBJ_DIR = build
 EXE_DIR = exe
@@ -168,7 +168,7 @@ s_SRC +=
 
 S_SRC += 
 
-LIBS =
+LIBS = -lm
 
 
 ####################################################################
