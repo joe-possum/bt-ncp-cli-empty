@@ -1,20 +1,3 @@
-/***************************************************************************//**
- * @file
- * @brief Event handling and application code for Empty NCP Host application example
- *******************************************************************************
- * # License
- * <b>Copyright 2018 Silicon Laboratories Inc. www.silabs.com</b>
- *******************************************************************************
- *
- * The licensor of this software is Silicon Laboratories Inc. Your use of this
- * software is governed by the terms of Silicon Labs Master Software License
- * Agreement (MSLA) available at
- * www.silabs.com/about-us/legal/master-software-license-agreement. This
- * software is distributed to you in Source Code format and is governed by the
- * sections of the MSLA applicable to Source Code.
- *
- ******************************************************************************/
-
 /* standard library headers */
 #include <stdint.h>
 #include <string.h>
@@ -23,7 +6,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <math.h>
-#include <sys/time.h>
 
 /* BG stack headers */
 #include "bg_types.h"
@@ -37,12 +19,11 @@
 // App booted flag
 static bool appBooted = false;
 static struct {
-  double timeout;
   char *name;
   uint32 advertising_interval;
   uint16 connection_interval, mtu; 
   bd_addr remote;
-  uint8 advertise, connection, reset;
+  uint8 advertise, connection;
 } config = { .remote = { .addr = {0,0,0,0,0,0}},
 	     .connection = 0xff,
 	     .advertise = 1,
@@ -50,8 +31,6 @@ static struct {
 	     .advertising_interval = 160, // 100 ms
 	     .connection_interval = 80, // 100 ms
 	     .mtu = 23,
-	     .reset = 0,
-	     .timeout = 5.0d,
 };
   
 void parse_address(const char *fmt,bd_addr *address) {
@@ -91,16 +70,23 @@ uint8 ad_manufacturer(uint8 *buffer, uint8 *data, uint8 len) {
 }
 
 const char *getAppOptions(void) {
-  return "l<level>";
+  return "a<remote-address>n<name>";
 }
 
 void appOption(int option, const char *arg) {
+  double dv;
   switch(option) {
-  case 'l':
-    config.reset = atoi(arg);
+  case 'a':
+    parse_address(arg,&config.remote);
+    config.advertise = 0;
     break;
-  case 't':
-    sscanf(arg,"%lf",&config.timeout);
+  case 'i':
+    sscanf(arg,"%lf",&dv);
+    config.advertising_interval = round(dv/0.625);
+    config.connection_interval = round(dv/1.25);
+    break;
+  case 'n':
+    config.name = strdup(arg);
     break;
   default:
     fprintf(stderr,"Unhandled option '-%c'\n",option);
@@ -113,42 +99,9 @@ void appInit(void) {
   for(int i = 0; i < 6; i++) {
     if(config.remote.addr[i]) return;
   }
-  printf("Usage: bt-system-reset [ -l <level> ]\n");
+  printf("Usage: master [ -a <address> ]\n");
   exit(1);
 }
-
-struct stopwatch {
-  struct timeval start, stop;
-  double value;
-  uint8 running, cached;
-};
-
-void stw_start(struct stopwatch *ptr) {
-  gettimeofday(&ptr->start,NULL);
-  ptr->running = 1;
-  ptr->cached = 0;
-}
-
-void stw_stop(struct stopwatch *ptr) {
-  gettimeofday(&ptr->start,NULL);
-  ptr->running = 0;
-}
-
-double stw_read(struct stopwatch *ptr) {
-  if(ptr->running) {
-    gettimeofday(&ptr->stop,NULL);
-    return ptr->stop.tv_sec - ptr->start.tv_sec \
-      + 1e-6d*(ptr->stop.tv_usec - ptr->start.tv_usec);
-  } else if (ptr->cached) return ptr->value;
-  else {
-    ptr->value = ptr->stop.tv_sec - ptr->start.tv_sec \
-      + 1e-6d*(ptr->stop.tv_usec - ptr->start.tv_usec);
-    ptr->cached = 1;
-    return ptr->value;
-  }
-}
-
-struct stopwatch sw;
 
 /***********************************************************************************************//**
  *  \brief  Event handler function.
@@ -157,10 +110,6 @@ struct stopwatch sw;
 void appHandleEvents(struct gecko_cmd_packet *evt)
 {
   if (NULL == evt) {
-    if (stw_read(&sw) > config.timeout) {
-      printf("Exiting due to timeout waiting for response\n");
-      exit(1);
-    }
     return;
   }
 
@@ -184,14 +133,38 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
   switch (BGLIB_MSG_ID(evt->header)) {
   case gecko_evt_system_boot_id:
     appBooted = true;
-    if(0xff == config.reset) {
-      stw_stop(&sw);
-      printf("Reboot took %lf seconds\n",stw_read(&sw));
-      exit(0);
+    if(config.advertise) {
+      uint8 discoverable_mode = le_gap_general_discoverable;
+      if(config.name) {
+	uint8 buf[31];
+	uint len = 0;
+	len += ad_flags(&buf[len],6);
+	len += ad_name(&buf[len],config.name);
+	gecko_cmd_le_gap_bt5_set_adv_data(0,0,len,buf);
+	discoverable_mode = le_gap_user_data;
+      }
+      gecko_cmd_le_gap_set_advertise_timing(0,config.advertising_interval,config.advertising_interval,0,0);
+      gecko_cmd_le_gap_start_advertising(0,discoverable_mode,le_gap_connectable_scannable);
+      gecko_cmd_system_get_bt_address();
+    } else {
+      gecko_cmd_le_gap_connect(config.remote,le_gap_address_type_public,le_gap_phy_1m);
     }
-    gecko_cmd_system_reset(config.reset);
-    stw_start(&sw);
-    config.reset = 0xff;
+    break;
+
+  case gecko_evt_le_connection_opened_id: /***************************************************************** le_connection_opened **/
+#define ED evt->data.evt_le_connection_opened
+    config.connection = ED.connection;
+    break;
+#undef ED
+
+  case gecko_evt_gatt_mtu_exchanged_id: /********************************************************************* gatt_mtu_exchanged **/
+#define ED evt->data.evt_gatt_mtu_exchanged
+    config.mtu = ED.mtu;
+    break;
+#undef ED
+
+  case gecko_evt_le_connection_closed_id:
+    exit(1);
     break;
 
   default:
