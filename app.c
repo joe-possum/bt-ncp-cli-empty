@@ -60,7 +60,7 @@ uint8 ad_name(uint8 *buffer, char *name) {
   return len + 2;
 }
 
-uint8 ad_manufacturer(uint8 *buffer, uint8 *data, uint8 len) {
+uint8 ad_manufacturer(uint8 *buffer, uint8 len, uint8 *data) {
   buffer[0] = len + 3;
   buffer[1] = 0xff;
   buffer[2] = 0xff;
