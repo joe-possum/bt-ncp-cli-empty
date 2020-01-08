@@ -1,4 +1,6 @@
 #include "common.h"
+#include <stdio.h>
+#include <string.h>
 
 void parse_address(const char *fmt,bd_addr *address) {
   char buf[3];
@@ -11,7 +13,7 @@ void parse_address(const char *fmt,bd_addr *address) {
   }
 }
 
-uint8 ad_flags(uint8 *buffer, uint flags) {
+uint8 ad_flags(uint8 *buffer, uint8 flags) {
   if(0 == flags) return 0;
   buffer[0] = 2;
   buffer[1] = 1;
@@ -36,11 +38,11 @@ uint8 ad_manufacturer(uint8 *buffer, uint8 len, uint8 *data) {
   return len + 4;
 }
 
-bool ad_match_local_name(uint8 len, uint8 *data, char *name) {
+int ad_match_local_name(uint8 len, uint8 *data, char *name) {
   uint8 *end = data + len;
   while(data < end) {
     uint8 elen = *data++;
-    uint8 type = data++;
+    uint8 type = *data++;
     if(--elen == strlen(name) && (0x09 == type)) {
       if(memcmp(data,name,elen)) return 1;
       break;
