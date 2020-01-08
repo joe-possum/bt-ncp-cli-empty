@@ -12,7 +12,7 @@ void dump_timestamp(int onoff) {
 static char timestamp_buffer[32];
 char *dump_get_timestamp(void) {
   struct gecko_msg_hardware_get_time_rsp_t*t = gecko_cmd_hardware_get_time();
-  sprintf(timestamp_buffer,"%lu.%05lu",t->seconds,(3052UL*t->ticks)/1000);
+  sprintf(timestamp_buffer,"%u.%05lu",t->seconds,(3052UL*t->ticks)/1000);
   return timestamp_buffer;
 }
 void dump_event_header(const char*str) {

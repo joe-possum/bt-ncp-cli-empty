@@ -230,7 +230,6 @@ static int appSerialPortInit(int argc, char* argv[], int32_t timeout)
    */
 
   const char* appOptions = getAppOptions();
-  int n = strlen(appOptions);
   char options[8+optstrlen(appOptions)];
   strcpy(options,"B:P:F:H");
   optstrcpy(options+7,appOptions);
