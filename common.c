@@ -1,3 +1,5 @@
+#include "common.h"
+
 void parse_address(const char *fmt,bd_addr *address) {
   char buf[3];
   int octet;
