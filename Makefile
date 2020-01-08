@@ -157,6 +157,7 @@ ${LOC_SDK}/protocol/bluetooth/ble_stack/src/host/gecko_bglib.c \
 ${LOC_SDK}/support.c \
 main.c \
 app.c \
+common.c \
 
 # this file should be the last added
 ifeq ($(OS),posix)
