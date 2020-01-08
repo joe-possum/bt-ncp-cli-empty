@@ -44,7 +44,7 @@ int ad_match_local_name(uint8 len, uint8 *data, char *name) {
     uint8 elen = *data++;
     uint8 type = *data++;
     if(--elen == strlen(name) && (0x09 == type)) {
-      if(memcmp(data,name,elen)) return 1;
+      if(!memcmp(data,name,elen)) return 1;
       break;
     }
     data  += elen;
