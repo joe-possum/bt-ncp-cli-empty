@@ -2,7 +2,8 @@
 #include "bg_types.h"
 
 void parse_address(const char *fmt,bd_addr *address);
-uint8 ad_flags(uint8 *buffer, uint8 flags);
-uint8 ad_name(uint8 *buffer, char *name);
-uint8 ad_manufacturer(uint8 *buffer, uint8 len, uint8 *data);
-int ad_match_local_name(uint8 len, uint8 *data, char *name);
+uint8_t ad_flags(uint8_t *buffer, uint8_t flags);
+uint8_t ad_name(uint8_t *buffer, char *name);
+uint8_t ad_manufacturer(uint8_t *buffer, uint8_t len, uint8_t *data);
+int ad_match_local_name(uint8_t len, uint8_t *data, char *name);
+uint8_t *ad_get_manufacturer(uint8_t len, uint8_t *data, uint8_t accept_len);
