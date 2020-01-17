@@ -42,7 +42,7 @@ int ad_match_local_name(uint8_t len, uint8_t *data, char *name) {
     uint8_t elen = *data++;
     uint8_t type = *data++;
     if(--elen == strlen(name) && (0x09 == type)) {
-      if(memcmp(data,name,elen)) return 1;
+      if(!memcmp(data,name,elen)) return 1;
       break;
     }
     data  += elen;
@@ -61,4 +61,13 @@ uint8_t *ad_get_manufacturer(uint8_t len, uint8_t *data, uint8_t accept_len) {
     data  += elen;
   }
   return 0;
+}
+
+char *str_address(bd_addr addr) {
+  static char buf[19];
+  for(int i = 0; i < 6; i++) {
+    sprintf(&buf[3*i],"%02x:",addr.addr[5-i]);
+  }
+  buf[18] = 0;
+  return buf;
 }
