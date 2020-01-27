@@ -96,7 +96,8 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
   }
 #endif
   switch (BGLIB_MSG_ID(evt->header)) {
-  case gecko_evt_system_boot_id:
+  case gecko_evt_system_boot_id: /*********************************************************************************** system_boot **/
+#define ED evt->data.evt_system_boot
     appBooted = true;
     if(config.advertise) {
       uint8 discoverable_mode = le_gap_general_discoverable;
@@ -115,6 +116,7 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
       gecko_cmd_le_gap_connect(config.remote,le_gap_address_type_public,le_gap_phy_1m);
     }
     break;
+#undef ED
 
   case gecko_evt_le_connection_opened_id: /***************************************************************** le_connection_opened **/
 #define ED evt->data.evt_le_connection_opened
@@ -128,9 +130,11 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
     break;
 #undef ED
 
-  case gecko_evt_le_connection_closed_id:
+  case gecko_evt_le_connection_closed_id: /***************************************************************** le_connection_closed **/
+#define ED evt->data.evt_le_connection_closed
     exit(1);
     break;
+#undef ED
 
   default:
     break;
