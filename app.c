@@ -103,7 +103,7 @@ void appHandleEvents(struct gecko_cmd_packet *evt)
       uint8 discoverable_mode = le_gap_general_discoverable;
       if(config.name) {
 	uint8 buf[31];
-	uint len = 0;
+	uint8 len = 0;
 	len += ad_flags(&buf[len],6);
 	len += ad_name(&buf[len],config.name);
 	gecko_cmd_le_gap_bt5_set_adv_data(0,0,len,buf);
