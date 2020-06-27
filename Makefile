@@ -23,7 +23,7 @@ DUMMY := ${shell chmod -Rc u+rwX .}
 uniq = $(strip $(if $1,$(firstword $1) \
        $(call uniq,$(filter-out $(firstword $1),$1))))
 
-PROJECTNAME = bt-ncp-cli-empty
+PROJECTNAME = node
 
 OBJ_DIR = build
 EXE_DIR = exe
@@ -94,7 +94,8 @@ INCLUDEPATHS += \
 -I${LOC_SDK} \
 -I${LOC_SDK}/uart \
 -I${LOC_SDK}/protocol/bluetooth/ble_stack/inc/common \
--I${LOC_SDK}/protocol/bluetooth/ble_stack/inc/host
+-I${LOC_SDK}/protocol/bluetooth/ble_stack/inc/host \
+-I${LOC_SDK}/protocol/bluetooth/bt_mesh/inc/
 
 # -MMD : Don't generate dependencies on system header files.
 # -MP  : Add phony targets, useful when a h-file is removed from a project.
