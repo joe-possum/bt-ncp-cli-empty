@@ -23,7 +23,7 @@ DUMMY := ${shell chmod -Rc u+rwX .}
 uniq = $(strip $(if $1,$(firstword $1) \
        $(call uniq,$(filter-out $(firstword $1),$1))))
 
-PROJECTNAME = bt-ncp-cli-empty
+PROJECTNAME = fake-node
 
 OBJ_DIR = build
 EXE_DIR = exe
@@ -158,6 +158,7 @@ ${LOC_SDK}/support.c \
 main.c \
 app.c \
 common.c \
+../provisioner/fcs.c \
 
 # this file should be the last added
 ifeq ($(OS),posix)
@@ -222,7 +223,7 @@ $(OBJ_DIR)/%.o: %.S
 # Link
 $(EXE_DIR)/$(PROJECTNAME): $(OBJS) $(LIBS)
 	@echo "Linking target: $@"
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CC) $(LDFLAGS) -L/usr/local/lib $^ -o $@ -lmbedtls -lmbedcrypto -lmbedx509 -lm
 	chmod 0755 $@
 
 
